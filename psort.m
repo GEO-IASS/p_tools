@@ -1,33 +1,51 @@
 function imgout = psort(imgin)
 %PSORT funky pixel-sorting algorithm with arbitrary angle and path waviness
+% 
+%   PSORT(image) initiates a series of user prompts to sort specified
+%   regions of pixels in an image. The user is given as many chances to
+%   sort with different parameters as desired.
+% 
+%   See also PSHIFT, PINVERT, PRAND, PCREATE, PVIEW
 
-% auxiliary function i made to display the image 
+%{
+$$------------------------------------------------------------------$$
+                           VERSION HISTORY
+1.0.0   g.kaplan    2016.09.09  * new program *
+1.0.1   g.kaplan    2016.09.10  added help, upper and lower thresholds instead of dark/light modes
+$$------------------------------------------------------------------$$
+%}
+
+% show the original image
 imgout = pview(imgin);
 
 % allow user to try/retry as many times as it takes to get a cool result
 sort = true;
 while sort
-    % just tells you on which side of the threshold you are going to sort
-    sortType = questdlg('What type of sort do you want to conduct?', '', 'Light', 'Dark', 'Light');
     % some fun sorting parameters i discovered while trying and filing to make the core functionality work
     sortOptions = listdlg('PromptString', 'Options', 'ListString', {'Normal sort', 'Broken sort', 'Backward sort'}, 'InitialValue', 1);
     % important info comes in here
-    params = inputdlg({'Threshhold [0, 1]', 'Sort direction (deg)', 'Waviness parameter [0, inf]'}, '', 1, {'0', '0', '0'});
+    params = inputdlg({'Upper threshold [0, 1]', 'Lower threshold [0, 1]', 'Sort direction (deg)', 'Waviness parameter [0, inf]'}, '', 1, {'1', '0', '0', '0'});
     
     if isempty(params)
         % end the program if the user hits cancel
         return
     else
         % parse out inputs
-        threshold = str2double(params{1});
-        sortDir = str2double(params{2});
-        sortWave = str2double(params{3});
-        if threshold > 1 || threshold < 0
+        thresholdU = str2double(params{1});
+        thresholdL = str2double(params{2});
+        sortDir = str2double(params{3});
+        sortWave = str2double(params{4});
+        if thresholdU > 1 || thresholdL < 0
             % keep the idiots out - pixel values are between 0 and 1
             return
         else
+            if thresholdU < thresholdL
+                tmp = thresholdU;
+                thresholdU = thresholdL;
+                thresholdL = tmp;
+            end
             % check out the local function below to see the nuts and bolts of it
-            imgout = pixelsort(imgin, sortType, threshold, sortOptions, sortDir, sortWave);
+            imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave);
         end
     end
     % mercifully allow the user to try again
@@ -39,20 +57,15 @@ end
 
 end
 
-function imgout = pixelsort(imgin, sortType, threshold, sortOptions, sortDir, sortWave)
+function imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave)
 
 imgout = imgin;
 
 % allocate brightness map as a logical
 kmap = false(size(imgin.k));
 
-% no matter which mode we're using, "TRUE" pixels will get picked up and sorted.
-switch sortType
-    case 'Light'
-        kmap(imgin.k>=threshold) = true;
-    case 'Dark'
-        kmap(imgin.k<threshold) = true;
-end
+% "TRUE" pixels will get picked up and sorted.
+kmap(imgin.k >= thresholdL & imgin.k <= thresholdU) = true;
 
 % convert from degrees into useful units of slope
 sortSlope = -tand(sortDir);
