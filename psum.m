@@ -14,6 +14,8 @@ function imgout = psum(imgin1, imgin2, addMode, opacity)
 %       - LinearBurn
 %       - Screen
 %       - ColorDodge
+%       - LighterColor
+%       - DarkerColor
 % 
 %   PSUM(image1, image2, addMode, opacity) allows you to set the opacity of
 %   image2. Use values between 0 and 1 for normal-looking results, but who
@@ -25,11 +27,12 @@ function imgout = psum(imgin1, imgin2, addMode, opacity)
 $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.10  * new program *
+1.0.1   g.kaplan    2016.09.11  fixed narginchk, added lighter/darker color modes
 $$------------------------------------------------------------------$$
 %}
 
 %% inputs
-narginchk(2,3)
+narginchk(2,4)
 
 if nargin == 2
     addMode = 'Add';
@@ -77,6 +80,18 @@ switch addMode
         for j = 'rbg'
             imgout.(j) = imgin1.(j) ./ (1 - imgin2.(j));
         end
+    case 'LighterColor'
+        for j = 'rbg'
+            temp.(j) = cat(3, imgin1.(j), imgin2.(j));
+            imgout.(j) = max(temp.(j), [], 3);
+        end
+    case 'DarkerColor'
+        for j = 'rbg'
+            temp.(j) = cat(3, imgin1.(j), imgin2.(j));
+            imgout.(j) = min(temp.(j), [], 3);
+        end
+    otherwise
+        error('Unsupported transfer mode.')
 end
 
 %% show it off

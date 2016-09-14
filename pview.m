@@ -10,17 +10,11 @@ $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help, output muting, width and height fields
+1.0.2   g.kaplan    removed trim due to all-black image complications
 $$------------------------------------------------------------------$$
 %}
 
 imgout = imgin;
-
-xtrim = repmat(sum(imgin.r + imgin.b + imgin.g, 2), 1, size(imgin.r, 2));
-ytrim = repmat(sum(imgin.r + imgin.b + imgin.g, 1), size(imgin.r, 1), 1);
-
-for j = 'rbg'
-    imgout.(j)(xtrim == 0 | ytrim == 0) = [];
-end
 
 imgout.k = (imgout.r + imgout.b + imgout.g) ./ 3;
 

@@ -12,6 +12,7 @@ $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help, upper and lower thresholds instead of dark/light modes
+1.0.2   g.kaplan    2016.09.10  added wavelength parameter for extra sweg
 $$------------------------------------------------------------------$$
 %}
 
@@ -24,7 +25,7 @@ while sort
     % some fun sorting parameters i discovered while trying and filing to make the core functionality work
     sortOptions = listdlg('PromptString', 'Options', 'ListString', {'Normal sort', 'Broken sort', 'Backward sort'}, 'InitialValue', 1);
     % important info comes in here
-    params = inputdlg({'Upper threshold [0, 1]', 'Lower threshold [0, 1]', 'Sort direction (deg)', 'Waviness parameter [0, inf]'}, '', 1, {'1', '0', '0', '0'});
+    params = inputdlg({'Upper threshold [0, 1]', 'Lower threshold [0, 1]', 'Sort direction (deg)', 'Waviness parameter [0, inf]', 'Wavelength (>0, px)'}, '', 1, {'1', '0', '0', '0', '360'});
     
     if isempty(params)
         % end the program if the user hits cancel
@@ -35,6 +36,7 @@ while sort
         thresholdL = str2double(params{2});
         sortDir = str2double(params{3});
         sortWave = str2double(params{4});
+        sortLambda = str2double(params{5});
         if thresholdU > 1 || thresholdL < 0
             % keep the idiots out - pixel values are between 0 and 1
             return
@@ -45,7 +47,7 @@ while sort
                 thresholdL = tmp;
             end
             % check out the local function below to see the nuts and bolts of it
-            imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave);
+            imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave, sortLambda);
         end
     end
     % mercifully allow the user to try again
@@ -57,7 +59,7 @@ end
 
 end
 
-function imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave)
+function imgout = pixelsort(imgin, thresholdU, thresholdL, sortOptions, sortDir, sortWave, sortLambda)
 
 imgout = imgin;
 
@@ -70,18 +72,23 @@ kmap(imgin.k >= thresholdL & imgin.k <= thresholdU) = true;
 % convert from degrees into useful units of slope
 sortSlope = -tand(sortDir);
 
+% stop the stupidity before it happens
+if sortLambda == 0
+    sortLambda = 360;
+end
+
 %% build the path - split into two options because that's what google told me to do
 if abs(sortDir) < 45 || abs(sortDir - 180) < 45
     X = repmat((1:size(kmap, 2))', 4*size(kmap, 1)+1, 1);
     Y0 = sort(repmat((-size(kmap, 1):3*size(kmap, 1))', size(kmap, 2), 1));
-    Y = fix(sortSlope .* X + sortWave .* sind(X) + Y0);
+    Y = fix(sortSlope .* X + sortWave .* sind(X .* 360 ./ sortLambda) + Y0);
     xc = [X, Y];
     condition = xc(:, 2) > size(kmap, 1) | xc(:, 2) < 1;
     xc(condition, :) = [];
 else
     Y = sort(repmat((1:size(kmap, 1))', 4*size(kmap, 2)+1, 1));
     X0 = sort(repmat((-size(kmap, 2):3*size(kmap, 2))', size(kmap, 1), 1));
-    X = fix(sortSlope .* Y + sortWave .* sind(Y) + X0);
+    X = fix(sortSlope .* Y + sortWave .* sind(Y .* 360 ./ sortLambda) + X0);
     xc = [X, Y];
     condition = xc(:, 1) > size(kmap, 2) | xc(:, 2) < 1;
     xc(condition, :) = [];
