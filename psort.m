@@ -13,15 +13,17 @@ $$------------------------------------------------------------------$$
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help, upper and lower thresholds instead of dark/light modes
 1.0.2   g.kaplan    2016.09.10  added wavelength parameter for extra sweg
+1.0.3   g.kaplan    2016.09.13  actually made the high-angle sort work
 $$------------------------------------------------------------------$$
 %}
 
-% show the original image
-imgout = pview(imgin);
+%%
 
 % allow user to try/retry as many times as it takes to get a cool result
 sort = true;
 while sort
+    % show the original image
+    imgout = pview(imgin);
     % some fun sorting parameters i discovered while trying and filing to make the core functionality work
     sortOptions = listdlg('PromptString', 'Options', 'ListString', {'Normal sort', 'Broken sort', 'Backward sort'}, 'InitialValue', 1);
     % important info comes in here
@@ -83,16 +85,15 @@ if abs(sortDir) < 45 || abs(sortDir - 180) < 45
     Y0 = sort(repmat((-size(kmap, 1):3*size(kmap, 1))', size(kmap, 2), 1));
     Y = fix(sortSlope .* X + sortWave .* sind(X .* 360 ./ sortLambda) + Y0);
     xc = [X, Y];
-    condition = xc(:, 2) > size(kmap, 1) | xc(:, 2) < 1;
-    xc(condition, :) = [];
 else
-    Y = sort(repmat((1:size(kmap, 1))', 4*size(kmap, 2)+1, 1));
+    Y = repmat((1:size(kmap, 1))', 4*size(kmap, 2)+1, 1);
     X0 = sort(repmat((-size(kmap, 2):3*size(kmap, 2))', size(kmap, 1), 1));
     X = fix(sortSlope .* Y + sortWave .* sind(Y .* 360 ./ sortLambda) + X0);
     xc = [X, Y];
-    condition = xc(:, 1) > size(kmap, 2) | xc(:, 2) < 1;
-    xc(condition, :) = [];
 end
+
+condition = xc(:, 1) > size(kmap, 2) | xc(:, 1) < 1 | xc(:, 2) > size(kmap, 1) | xc(:, 2) < 1;
+xc(condition, :) = [];
 
 %% iterate through the path
 i = 1;
