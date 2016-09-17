@@ -12,6 +12,7 @@ function imgout = ptilt(imgin, channelSwitch)
 $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.13  * new program *
+1.0.1   g.kaplan    2016.09.17  adds mean of old data back to avoid darkening of image
 $$------------------------------------------------------------------$$
 %}
 
@@ -37,5 +38,5 @@ tiltfit = img;
 [x, y] = meshgrid(1:img.height, 1:img.width);
 z = x .* coeffs(1) + y .* coeffs(2) + coeffs(3);
 err = mean(mean((img.(channel) - z).^2));
-tiltfit.(channel) = img.(channel)  - z;
+tiltfit.(channel) = img.(channel)  - z + mean(mean(img.(channel)));
 end

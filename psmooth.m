@@ -10,6 +10,7 @@ function imgout = psmooth(imgin, nPix)
 $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.13  * new program *
+1.0.1   g.kaplan    2016.09.17  switched to 'same' mode in conv2
 $$------------------------------------------------------------------$$
 %}
 
@@ -22,7 +23,7 @@ filt = exp((radX.^2 - radY.^2)/(2*nPix^2));
 filt = filt ./ max(filt(:));
 
 for j = 'rgb'
-    imgout.(j) = conv2(filt, imgin.(j));
+    imgout.(j) = conv2(imgin.(j), filt, 'same');
 end
 
 imax = max([max(max(imgout.r)), max(max(imgout.b)), max(max(imgout.g))]);

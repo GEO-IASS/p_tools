@@ -13,6 +13,7 @@ $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help, manual filename
+1.0.2   g.kaplan    2016.09.17  fixed channel order
 $$------------------------------------------------------------------$$
 %}
 
@@ -21,6 +22,6 @@ if nargin < 2 || ~ischar(filename)
     cd(pathname)
 end
 
-imwrite(cat(3, imgin.r, imgin.b, imgin.g), filename, 'png')
+imwrite(cat(3, imgin.r, imgin.g, imgin.b), filename, 'png')
 
 end

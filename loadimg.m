@@ -15,6 +15,7 @@ $$------------------------------------------------------------------$$
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help
 1.0.2   g.kaplan    2016.09.13  added clean escape if user closes window
+1.0.3   g.kaplan    2016.09.17  fixed order of color channels
 $$------------------------------------------------------------------$$
 %}
 
@@ -30,8 +31,8 @@ end
 
 imgin = im2double(imread(filename));
 imgout = struct('r', imgin(:, :, 1), ...
-                'b',imgin(:, :, 2), ...
-                'g', imgin(:, :, 3));
+                'g', imgin(:, :, 2), ...
+                'b', imgin(:, :, 3));
 
 varargout = {pview(imgout)};
 

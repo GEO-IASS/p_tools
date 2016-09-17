@@ -10,7 +10,8 @@ $$------------------------------------------------------------------$$
                            VERSION HISTORY
 1.0.0   g.kaplan    2016.09.09  * new program *
 1.0.1   g.kaplan    2016.09.10  added help, output muting, width and height fields
-1.0.2   g.kaplan    removed trim due to all-black image complications
+1.0.2   g.kaplan    2016.09.11  removed trim due to all-black image complications
+1.0.3   g.kaplan    2016.09.17  fixed image channel order
 $$------------------------------------------------------------------$$
 %}
 
@@ -24,7 +25,7 @@ end
 
 [imgout.width, imgout.height] = size(imgout.k);
 
-imshow(cat(3, imgin.r, imgin.b, imgin.g))
+imshow(cat(3, imgin.r, imgin.g, imgin.b))
 
 if nargout == 0
     varargout = {};
